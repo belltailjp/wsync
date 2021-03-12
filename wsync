@@ -22,6 +22,7 @@ for ARG in $ARGS; do
   fi
 done
 SRCS=${DIRS[@]::${#DIRS[@]}-1}
+DEST=${DIRS[-1]}
 
 
 function printlog() {
@@ -30,6 +31,8 @@ function printlog() {
   D=`date +"%Y-%m-%d %H:%M:%S"`
   echo -e "${COLOR}$D wsync:${NC} $@"
 }
+
+printlog "Watch ${SRCS[@]} and sync to $DEST"
 
 inotifywait -qrm -e $EVENTS ${SRCS[@]} | 
   while read events; do
