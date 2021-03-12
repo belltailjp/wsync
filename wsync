@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EVENTS=MODIFY,CLOSE_WRITE,MOVED_TO,MOVED_FROM,MOVE,CREATE
+EVENTS=MODIFY,MOVED_TO,MOVED_FROM,CREATE
 
 ARGS=$@
 if [ $# -lt 1 ]; then
@@ -14,19 +14,29 @@ if [ $# -lt 1 ]; then
   exit -1
 fi
 
+# Parse arguments and extract SRC
 DIRS=()
 for ARG in $ARGS; do
   if [[ ! $ARG == -* ]]; then
     DIRS+=($ARG)
   fi
 done
-
 SRCS=${DIRS[@]::${#DIRS[@]}-1}
+
+
+function printlog() {
+  COLOR='\033[1;32m'    # Light green
+  NC='\033[0m'
+  D=`date +"%Y-%m-%d %H:%M:%S"`
+  echo -e "${COLOR}$D wsync:${NC} $@"
+}
 
 inotifywait -qrm -e $EVENTS ${SRCS[@]} | 
   while read events; do
-    echo wsync: Modification detected. Running "rsync ${ARGS}"
+    printlog "Modification detected. Running \"rsync ${ARGS}\""
+    BEFORE=$SECONDS
     rsync ${ARGS}
-    echo "wsync: Completed"
-    sleep 0.02
+    ELAPSED=$(($SECONDS - $BEFORE))
+    printlog "Completed in ${ELAPSED}s"
+    sleep 0.1
   done
