@@ -1,0 +1,20 @@
+#!/bin/bash
+
+ARGS=$@
+
+DIRS=()
+for ARG in $ARGS; do
+  if [[ ! $ARG == -* ]]; then
+    DIRS+=($ARG)
+  fi
+done
+
+SRCS=${DIRS[@]::${#DIRS[@]}-1}
+
+while :; do
+  inotifywait -e MODIFY,CLOSE_WRITE,MOVED_TO,MOVED_FROM,MOVE,CREATE ${SRCS[@]} 2> /dev/null > /dev/null
+  echo wsync: Modification detected. Running "rsync ${ARGS}"
+  rsync ${ARGS}
+  echo "wsync: Completed"
+  sleep 0.02
+done
