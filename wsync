@@ -1,5 +1,7 @@
 #!/bin/bash
 
+EVENTS=MODIFY,CLOSE_WRITE,MOVED_TO,MOVED_FROM,MOVE,CREATE
+
 ARGS=$@
 if [ $# -lt 1 ]; then
   echo 'wsync: inotifywait + rsync' >&2
@@ -21,10 +23,10 @@ done
 
 SRCS=${DIRS[@]::${#DIRS[@]}-1}
 
-while :; do
-  inotifywait -e MODIFY,CLOSE_WRITE,MOVED_TO,MOVED_FROM,MOVE,CREATE ${SRCS[@]} 2> /dev/null > /dev/null
-  echo wsync: Modification detected. Running "rsync ${ARGS}"
-  #rsync ${ARGS}
-  echo "wsync: Completed"
-  sleep 0.02
-done
+inotifywait -qrm -e $EVENTS ${SRCS[@]} | 
+  while read events; do
+    echo wsync: Modification detected. Running "rsync ${ARGS}"
+    rsync ${ARGS}
+    echo "wsync: Completed"
+    sleep 0.02
+  done
