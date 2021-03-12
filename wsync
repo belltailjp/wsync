@@ -1,6 +1,16 @@
 #!/bin/bash
 
 ARGS=$@
+if [ $# -lt 1 ]; then
+  echo 'wsync: inotifywait + rsync' >&2
+  echo 'Keeps watching the source directory(ies) by inotifywait and when a modification is detected runs rsync with the specified arguments.' >&2
+  echo '' >&2
+  echo 'Usage:' >&2
+  echo '    wsync [OPTION...] SRC... [DEST]' >&2
+  echo '' >&2
+  echo 'Any arguments are directly delegated to rsync.' >&2
+  exit -1
+fi
 
 DIRS=()
 for ARG in $ARGS; do
@@ -14,7 +24,7 @@ SRCS=${DIRS[@]::${#DIRS[@]}-1}
 while :; do
   inotifywait -e MODIFY,CLOSE_WRITE,MOVED_TO,MOVED_FROM,MOVE,CREATE ${SRCS[@]} 2> /dev/null > /dev/null
   echo wsync: Modification detected. Running "rsync ${ARGS}"
-  rsync ${ARGS}
+  #rsync ${ARGS}
   echo "wsync: Completed"
   sleep 0.02
 done
