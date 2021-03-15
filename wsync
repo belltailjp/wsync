@@ -35,7 +35,9 @@ function printlog() {
 printlog "Watch ${SRCS[@]} and sync to $DEST"
 
 printlog "Initial \"rsync ${ARGS}\""
+BEFORE=$SECONDS
 rsync ${ARGS}
+ELAPSED=$(($SECONDS - $BEFORE))
 printlog "Completed in ${ELAPSED}s"
 
 inotifywait -qrm -e $EVENTS ${SRCS[@]} | 
