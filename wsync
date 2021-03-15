@@ -34,6 +34,10 @@ function printlog() {
 
 printlog "Watch ${SRCS[@]} and sync to $DEST"
 
+printlog "Initial \"rsync ${ARGS}\""
+rsync ${ARGS}
+printlog "Completed in ${ELAPSED}s"
+
 inotifywait -qrm -e $EVENTS ${SRCS[@]} | 
   while read events; do
     printlog "Modification detected. Running \"rsync ${ARGS}\""
@@ -41,5 +45,5 @@ inotifywait -qrm -e $EVENTS ${SRCS[@]} |
     rsync ${ARGS}
     ELAPSED=$(($SECONDS - $BEFORE))
     printlog "Completed in ${ELAPSED}s"
-    sleep 0.1
+    sleep 1
   done
