@@ -52,8 +52,18 @@ printlog "Completed in ${ELAPSED}s"
 
 # Watch & sync loop
 inotifywait $QUIET_OPTION -rm -e $EVENTS ${SRCS[@]} | 
-  while read events; do
+  while read EVENTS; do
     printlog "Modification detected. Running \"rsync ${ARGS}\""
+
+    # Read all the events left in the pipe buffer (by setting timeout 0.1).
+    # to prevent rsync being launched multiple times
+    ALL_EVENTS=$EVENTS
+    while read -t 0.1 EVENTS; do
+      ALL_EVENTS="${EVENTS}\n${ALL_EVENTS}"
+    done
+    if [ $WSYNC_DEBUG -ne 0 ]; then
+      echo -e "$ALL_EVENTS"
+    fi
     BEFORE=$SECONDS
     rsync ${ARGS}
     ELAPSED=$(($SECONDS - $BEFORE))
